@@ -16,14 +16,13 @@ import { Label } from "@/components/ui/label";
 import { formSchema, NewPostForm } from "@/schemas/newPost";
 import PostList from "@/components/postList";
 import useSWR from 'swr';
-import { HydratedDocument } from "mongoose";
-import { Post } from "@/model/post";
+import { Post } from "@/types/post";
 
 const inter = Inter({ subsets: ["latin"] });
 const fetcher = (...args: Parameters<typeof fetch>) => fetch(...args).then(res => res.json())
 
 export default function Home() {
-  const { data, error, isLoading, mutate } = useSWR<HydratedDocument<Post>[]>('/api/posts', fetcher);
+  const { data, error, isLoading, mutate } = useSWR<Post[]>('/api/posts', fetcher);
   const form = useForm<NewPostForm>({
     resolver: zodResolver(formSchema),
     defaultValues: {

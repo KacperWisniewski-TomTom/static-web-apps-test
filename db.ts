@@ -1,58 +1,60 @@
-import mongoose, { Mongoose } from "mongoose";
+import { Container, CosmosClient } from "@azure/cosmos";
 
-const globalForMongoose = global as unknown as {
-  mongoose: {
-    promise: Promise<Mongoose> | null;
-    conn: Mongoose | null;
+const globalForCosmos = global as unknown as {
+  cosmos: {
+    promise: Promise<Container> | null;
+    container: Container | null;
   };
 };
-const MONGODB_URI = process.env.MONGODB_URI;
+const COSMOSDB_URI = process.env.COSMOSDB_URI;
 
-if (!MONGODB_URI) {
-    throw new Error(
-      'Please define the MONGODB_URI environment variable inside .env.local'
-    )
-  }
+if (!COSMOSDB_URI) {
+  throw new Error(
+    "Please define the COSMOSDB_URI environment variable inside .env.local"
+  );
+}
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
-let cached = globalForMongoose.mongoose;
+let cached = globalForCosmos.cosmos;
 
 if (!cached) {
-  cached = globalForMongoose.mongoose = { conn: null, promise: null };
+  cached = globalForCosmos.cosmos = { container: null, promise: null };
 }
 
 async function dbConnect() {
-  if (!MONGODB_URI) {
+  if (!COSMOSDB_URI) {
     throw new Error(
       "Please define the MONGODB_URI environment variable inside .env.local"
     );
   }
-  if (cached.conn) {
-    return cached.conn;
+  if (cached.container) {
+    return cached.container;
   }
 
   if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
-    });
+    const cosmosClient = new CosmosClient(COSMOSDB_URI);
+    cached.promise = new Promise(async (resolve) => {
+        const databaseResponse = await cosmosClient.databases.createIfNotExists({ id: "test" })
+        const containerResponse = await databaseResponse.database.containers.createIfNotExists({
+            id: "posts",
+            partitionKey: { paths: ["/userEmail"] },
+          });
+        return resolve(containerResponse.container)
+    })
   }
 
   try {
-    cached.conn = await cached.promise;
+    cached.container = await cached.promise;
   } catch (e) {
     cached.promise = null;
     throw e;
   }
 
-  return cached.conn;
+  return cached.container;
 }
 
 export default dbConnect;

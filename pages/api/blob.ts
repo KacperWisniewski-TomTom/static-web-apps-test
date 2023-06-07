@@ -1,5 +1,4 @@
 import dbConnect from "@/db";
-import PostTable, { Post } from "@/model/post";
 import {
   BlobServiceClient,
 } from "@azure/storage-blob";
@@ -37,8 +36,8 @@ export default async function handler(
       message: "File not found, please save the posts first.",
     });
   } else if (req.method === "POST") {
-    await dbConnect();
-    const allPosts: Post[] = await PostTable.find({});
+    const cosmosContainer = await dbConnect();
+    const { resources: allPosts } = await cosmosContainer.items.query("SELECT p.id, p.userEmail, p.title from posts p").fetchAll();
     const allPostsJson = JSON.stringify(allPosts);
     const blockBlobClient = containerClient.getBlockBlobClient("posts.json");
     const uploadResponse = await blockBlobClient.upload(
