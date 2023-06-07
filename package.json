@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@azure/storage-blob": "^12.14.0",
     "@hookform/resolvers": "^3.1.0",
-    "@prisma/client": "^4.15.0",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
     "@types/node": "20.2.5",
@@ -25,7 +25,6 @@
     "mongoose": "^7.2.2",
     "next": "13.4.4",
     "postcss": "8.4.24",
-    "prisma": "^4.15.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.44.3",

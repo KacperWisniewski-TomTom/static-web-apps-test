@@ -1,8 +1,8 @@
-import { Post } from '@prisma/client';
-
+import { Post } from "@/model/post"
+import { HydratedDocument } from "mongoose"
 
 interface PostListProps {
-    posts: Post[] | undefined,
+    posts: HydratedDocument<Post>[] | undefined,
     error: any,
     isLoading: boolean
 }
@@ -13,7 +13,7 @@ export default function PostList({posts, error, isLoading}: PostListProps) {
    
     // render data
     return <div>
-        {posts.map(post => (<div key={post.id} className='flex gap-2'>
+        {posts.map(post => (<div key={post._id.toString()} className='flex gap-2'>
             <p>{post.userEmail}</p>
             <p>{post.title}</p>
         </div>))}
